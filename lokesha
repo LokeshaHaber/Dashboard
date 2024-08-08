@@ -1,0 +1,49 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the data from Excel
+data_path = 'Indicators list.xlsx'
+indicators_df = pd.read_excel(data_path)
+
+# Title of the dashboard
+st.title("Child Protection Indicators Dashboard")
+
+# Sidebar for navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.selectbox("Choose a page", ["Overview", "Detailed View"])
+
+# Overview Page
+if page == "Overview":
+    st.header("Overview of Indicators")
+    st.write("This dashboard provides an overview of key child protection indicators.")
+    
+    # Display the data
+    st.dataframe(indicators_df)
+    
+    # Plot some basic charts
+    st.subheader("Funding Secured by Country")
+    if 'Country' in indicators_df.columns and 'Funding Secured' in indicators_df.columns:
+        fig, ax = plt.subplots()
+        indicators_df.groupby('Country')['Funding Secured'].sum().plot(kind='bar', ax=ax)
+        st.pyplot(fig)
+    else:
+        st.write("Data for funding secured by country is not available.")
+    
+# Detailed View Page
+elif page == "Detailed View":
+    st.header("Detailed View of Indicators")
+    indicator = st.selectbox("Choose an indicator", indicators_df['Indicator'].unique())
+    filtered_data = indicators_df[indicators_df['Indicator'] == indicator]
+    
+    # Display filtered data
+    st.write(filtered_data)
+
+    # Plot data for the selected indicator if numeric
+    if 'Value' in filtered_data.columns:
+        st.subheader(f"Plot for {indicator}")
+        fig, ax = plt.subplots()
+        filtered_data.plot(kind='bar', x='Country', y='Value', ax=ax)
+        st.pyplot(fig)
+    else:
+        st.write("No numerical data to plot for the selected indicator.")
